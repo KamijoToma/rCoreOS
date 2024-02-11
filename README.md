@@ -7,6 +7,14 @@ From rCore-Tutorical version 3.6.
 
 此仓库存储我在学习此教程时的跟随编写的操作系统，目前名字是 `wCore`，目标是实现大部分 Linux 的系统调用并成功运行一些 Linux 的程序。
 
+## 环境配置
+
+克隆仓库后使用 VSCode DevContainer 插件打开 `.devcontainer/devcontainer.json` 启用开发容器即可。也可参考下方原始 README.md 中的环境配置部分手动配置环境。
+
+## 运行测试
+
+项目现在处于 LibOS 阶段，可以通过运行 `os/run.sh` 脚本编译并启动内核。
+
 Following is the original README.md
 
 ----
