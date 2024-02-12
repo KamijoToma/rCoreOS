@@ -3,7 +3,7 @@ use core::arch::global_asm;
 use log::error;
 use riscv::register::{scause::{Exception, Trap}, scause, stval, stvec};
 
-use crate::{batch::run_next_app, syscall::syscall};
+use crate::{loader::run_next_app, syscall::syscall};
 
 use self::context::TrapContext;
 
