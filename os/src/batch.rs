@@ -115,6 +115,10 @@ pub fn print_app_info() {
     APP_MANAGER.exclusive_access().print_app_info();
 }
 
+pub fn get_current_app_memory_range() -> [usize; 2] {
+    [APP_BASE_ADDRESS, APP_BASE_ADDRESS+APP_SIZE_LIMIT]
+}
+
 pub fn run_next_app() -> ! {
     let mut app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
