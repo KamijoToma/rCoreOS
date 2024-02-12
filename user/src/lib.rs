@@ -2,21 +2,31 @@
 #![feature(panic_info_message)]
 #![no_std]
 
-mod syscall;
 pub mod console;
 mod lang_item;
+mod syscall;
 
 use syscall::*;
 
-pub fn write(fd: usize, buf: &[u8]) -> isize { sys_write(fd, buf)}
+pub fn write(fd: usize, buf: &[u8]) -> isize {
+    sys_write(fd, buf)
+}
 
-pub fn exit(exit_code: i32) -> isize { sys_exit(exit_code)}
+pub fn exit(exit_code: i32) -> isize {
+    sys_exit(exit_code)
+}
 
-pub fn get_taskinfo() -> isize { sys_get_task_info() }
+pub fn get_taskinfo() -> isize {
+    sys_get_task_info()
+}
 
-pub fn yield_() -> isize { sys_yield() }
+pub fn yield_() -> isize {
+    sys_yield()
+}
 
-pub fn get_time(ts: &mut TimeVal) -> isize { sys_get_time(&mut *ts, 0) }
+pub fn get_time(ts: &mut TimeVal) -> isize {
+    sys_get_time(&mut *ts, 0)
+}
 
 #[repr(C)]
 pub struct TimeVal {
@@ -26,10 +36,13 @@ pub struct TimeVal {
 
 impl TimeVal {
     pub fn new() -> Self {
-        TimeVal {
-            sec: 0,
-            usec: 0,
-        }
+        TimeVal { sec: 0, usec: 0 }
+    }
+}
+
+impl Default for TimeVal {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -47,11 +60,7 @@ extern "C" {
 }
 
 fn clear_bss() {
-    (lib_sbss as usize..lib_ebss as usize).for_each(|a| {
-        unsafe{
-            (a as *mut u8).write_volatile(0) 
-        }
-    })
+    (lib_sbss as usize..lib_ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) })
 }
 
 // Weak main

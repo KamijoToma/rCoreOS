@@ -10,4 +10,3 @@ fn main() -> i32 {
     println!("This task is {}", get_taskinfo());
     0
 }
-
