@@ -107,6 +107,10 @@ pub fn init() {
     print_app_info();
 }
 
+pub fn get_current_app() -> usize {
+    APP_MANAGER.exclusive_access().current_app
+}
+
 pub fn print_app_info() {
     APP_MANAGER.exclusive_access().print_app_info();
 }
