@@ -8,12 +8,12 @@ use crate::task::context::TaskContext;
 use crate::{config::MAX_APP_NUM, loader::get_num_app, sync::up::UPSafeCell};
 
 use self::switch::__switch;
-use self::task::TaskControlBlock;
-use self::task::TaskStatus;
+use self::tasks::TaskControlBlock;
+use self::tasks::TaskStatus;
 
 pub mod context;
 pub mod switch;
-pub mod task;
+pub mod tasks;
 
 pub struct TaskManager {
     num_app: usize,
@@ -30,11 +30,11 @@ lazy_static! {
         let num_app = get_num_app();
         let mut tasks = [TaskControlBlock {
             task_cx: TaskContext::zero_init(),
-            task_status: task::TaskStatus::UnInit,
+            task_status: tasks::TaskStatus::UnInit,
         }; MAX_APP_NUM];
-        for i in 0..num_app {
-            tasks[i].task_cx = TaskContext::goto_restore(init_app_cx(i));
-            tasks[i].task_status = TaskStatus::Ready;
+        for (i, item) in tasks.iter_mut().enumerate().take(num_app) {
+            item.task_cx = TaskContext::goto_restore(init_app_cx(i));
+            item.task_status = TaskStatus::Ready;
         }
         TaskManager {
             num_app,
