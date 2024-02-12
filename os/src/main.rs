@@ -15,6 +15,7 @@ mod sync;
 mod syscall;
 mod task;
 mod trap;
+mod timer;
 use ::log::info;
 use sbi::*;
 

@@ -16,6 +16,23 @@ pub fn get_taskinfo() -> isize { sys_get_task_info() }
 
 pub fn yield_() -> isize { sys_yield() }
 
+pub fn get_time(ts: &mut TimeVal) -> isize { sys_get_time(&mut *ts, 0) }
+
+#[repr(C)]
+pub struct TimeVal {
+    pub sec: usize,
+    pub usec: usize,
+}
+
+impl TimeVal {
+    pub fn new() -> Self {
+        TimeVal {
+            sec: 0,
+            usec: 0,
+        }
+    }
+}
+
 #[no_mangle]
 #[link_section = ".text.entry"]
 pub extern "C" fn _start() -> ! {
