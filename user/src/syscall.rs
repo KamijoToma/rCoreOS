@@ -22,6 +22,7 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
 const SYSCALL_TASKINFO: usize = 255;
+const SYSCALL_YIELD: usize = 124;
 
 pub fn sys_write(fd: usize, buffer: &[u8]) -> isize {
     syscall(SYSCALL_WRITE, [fd, buffer.as_ptr() as usize, buffer.len()])
@@ -33,4 +34,8 @@ pub fn sys_exit(state: i32) -> isize {
 
 pub fn sys_get_task_info() -> isize {
     syscall(SYSCALL_TASKINFO, [0; 3])
+}
+
+pub fn sys_yield() -> isize {
+    syscall(SYSCALL_YIELD, [0; 3])
 }

@@ -40,7 +40,7 @@ __all_traps:
 __restore:
     # case1: start running app by __restore
     # case2: back to U after handling trap
-    mv sp, a0
+    # mv sp, a0 # Remember me at https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter3/3multiprogramming.html
     # now sp->kernel stack(after allocated), sscratch->user stack
     # restore sstatus/sepc
     ld t0, 32*8(sp)

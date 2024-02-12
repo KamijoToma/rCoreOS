@@ -9,13 +9,16 @@ mod log;
 mod sbi;
 #[macro_use]
 mod console;
-mod sync;
-mod trap;
-mod syscall;
 mod config;
 mod loader;
+mod sync;
+mod syscall;
+mod task;
+mod trap;
 use ::log::info;
 use sbi::*;
+
+use crate::{loader::load_apps, task::run_first_task};
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
 
@@ -39,9 +42,9 @@ pub fn rust_main() -> ! {
     info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
     info!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
     info!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
-    loader::init();
     trap::init();
-    loader::run_next_app();
+    load_apps();
+    run_first_task();
 }
 
 // 将 bss 段的内容全部置零

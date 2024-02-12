@@ -14,6 +14,8 @@ pub fn exit(exit_code: i32) -> isize { sys_exit(exit_code)}
 
 pub fn get_taskinfo() -> isize { sys_get_task_info() }
 
+pub fn yield_() -> isize { sys_yield() }
+
 #[no_mangle]
 #[link_section = ".text.entry"]
 pub extern "C" fn _start() -> ! {
