@@ -11,6 +11,7 @@
 os/last-*
 os/Cargo.lock
 os/.gdb_history
+os/src/link_app.S
 user/build
 user/target/*
 user/.idea/*
