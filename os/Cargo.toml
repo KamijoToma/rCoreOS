@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 sbi-rt = { version = "0.0.2", features = ["legacy"] }
 log = "0.4.14"
+buddy_system_allocator = "0.6"
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
 riscv = { git = "https://github.com/rcore-os/riscv", features = ["inline-asm"] }

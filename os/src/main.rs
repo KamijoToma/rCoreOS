@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
+#![feature(alloc_error_handler)]
 
 use core::arch::global_asm;
 
@@ -16,10 +17,12 @@ mod syscall;
 mod task;
 mod trap;
 mod timer;
+mod mm;
 use ::log::info;
 use sbi::*;
 
 use crate::{loader::load_apps, task::run_first_task};
+extern crate alloc;
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
 
@@ -38,6 +41,7 @@ extern "C" {
 pub fn rust_main() -> ! {
     clear_bss();
     log::init().expect("Error init log module.");
+    mm::heap_allocator::init_heap();
     info!("Hello World from wCore OS");
     info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
     info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
@@ -52,5 +56,7 @@ pub fn rust_main() -> ! {
 
 // 将 bss 段的内容全部置零
 fn clear_bss() {
-    (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) })
+    unsafe {
+        core::slice::from_raw_parts_mut(sbss as usize as *mut u8, ebss as usize - sbss as usize).fill(0)
+    }
 }
