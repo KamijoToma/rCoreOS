@@ -1,13 +1,11 @@
 use core::arch::global_asm;
 
-use log::error;
+use log::{error, trace};
 use riscv::register::{
-    scause,
-    scause::{Exception, Trap},
-    stval, stvec,
+    scause::{self, Exception, Trap}, sie, stval, stvec
 };
 
-use crate::{syscall::syscall, task::exit_current_and_run_next};
+use crate::{syscall::syscall, task::{exit_current_and_run_next, suspend_current_and_run_next}, timer::set_next_trigger};
 
 use self::context::TrapContext;
 
@@ -21,6 +19,12 @@ pub fn init() {
     }
     unsafe {
         stvec::write(__all_traps as usize, stvec::TrapMode::Direct);
+    }
+}
+
+pub fn enable_timer_interrupt() {
+    unsafe {
+        sie::set_stimer();
     }
 }
 
@@ -46,6 +50,11 @@ pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
                 cx.sepc
             );
             exit_current_and_run_next()
+        }
+        Trap::Interrupt(scause::Interrupt::SupervisorTimer) => {
+            set_next_trigger();
+            trace!("Timer triggered.");
+            suspend_current_and_run_next()
         }
         _ => {
             panic!(

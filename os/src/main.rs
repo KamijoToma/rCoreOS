@@ -45,6 +45,8 @@ pub fn rust_main() -> ! {
     info!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
     trap::init();
     load_apps();
+    trap::enable_timer_interrupt();
+    timer::set_next_trigger();
     run_first_task();
 }
 

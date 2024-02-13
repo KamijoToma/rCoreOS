@@ -103,7 +103,7 @@ impl TaskManager {
         let task0 = &mut inner.tasks[0];
         task0.task_status = TaskStatus::Running;
         let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
-        info!("Entering run first task sp={:#x}", task0.task_cx.sp);
+        trace!("Entering run first task sp={:#x}", task0.task_cx.sp);
         drop(inner);
         let mut _unused = TaskContext::zero_init();
         unsafe {
