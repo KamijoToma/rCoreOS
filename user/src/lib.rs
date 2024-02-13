@@ -49,18 +49,8 @@ impl Default for TimeVal {
 #[no_mangle]
 #[link_section = ".text.entry"]
 pub extern "C" fn _start() -> ! {
-    clear_bss();
     exit(main());
     unreachable!("unreachable after sys_exit!");
-}
-
-extern "C" {
-    fn lib_sbss();
-    fn lib_ebss();
-}
-
-fn clear_bss() {
-    (lib_sbss as usize..lib_ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) })
 }
 
 // Weak main

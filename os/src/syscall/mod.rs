@@ -1,11 +1,14 @@
 use self::{
-    fs::sys_write, process::{sys_exit, sys_yield}, time::{syscall_get_time, TimeVal}, wcore::syscall_get_task_info
+    fs::sys_write,
+    process::{sys_exit, sys_yield},
+    time::{syscall_get_time, TimeVal},
+    wcore::syscall_get_task_info,
 };
 
 pub mod fs;
 pub mod process;
-pub mod wcore;
 pub mod time;
+pub mod wcore;
 
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;

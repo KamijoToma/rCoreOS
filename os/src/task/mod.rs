@@ -1,11 +1,12 @@
+use alloc::vec::Vec;
 use lazy_static::lazy_static;
-use log::{info, trace};
+use log::{debug, info, trace};
 
-use crate::config::APP_SIZE_LIMIT;
-use crate::loader::{get_base_i, init_app_cx};
+use crate::loader::get_app_data;
 use crate::shutdown;
 use crate::task::context::TaskContext;
-use crate::{config::MAX_APP_NUM, loader::get_num_app, sync::up::UPSafeCell};
+use crate::trap::context::TrapContext;
+use crate::{loader::get_num_app, sync::up::UPSafeCell};
 
 use self::switch::__switch;
 use self::tasks::TaskControlBlock;
@@ -21,20 +22,17 @@ pub struct TaskManager {
 }
 
 struct TaskManagerInner {
-    tasks: [TaskControlBlock; MAX_APP_NUM],
+    tasks: Vec<TaskControlBlock>,
     current_task: usize,
 }
 
 lazy_static! {
     pub static ref TASK_MANAGER: TaskManager = {
         let num_app = get_num_app();
-        let mut tasks = [TaskControlBlock {
-            task_cx: TaskContext::zero_init(),
-            task_status: tasks::TaskStatus::UnInit,
-        }; MAX_APP_NUM];
-        for (i, item) in tasks.iter_mut().enumerate().take(num_app) {
-            item.task_cx = TaskContext::goto_restore(init_app_cx(i));
-            item.task_status = TaskStatus::Ready;
+        let mut tasks: Vec<TaskControlBlock> = Vec::new();
+        for i in 0..num_app {
+            let data = get_app_data(i);
+            tasks.push(TaskControlBlock::new(data, i));
         }
         TaskManager {
             num_app,
@@ -93,23 +91,29 @@ impl TaskManager {
         inner.current_task
     }
 
-    fn get_current_task_memory_range(&self) -> [usize; 2] {
-        let current = get_current_task();
-        [get_base_i(current), get_base_i(current) + APP_SIZE_LIMIT]
-    }
-
     fn run_first_task(&self) -> ! {
         let mut inner = self.inner.exclusive_access();
         let task0 = &mut inner.tasks[0];
         task0.task_status = TaskStatus::Running;
         let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
-        trace!("Entering run first task sp={:#x}", task0.task_cx.sp);
         drop(inner);
         let mut _unused = TaskContext::zero_init();
         unsafe {
             __switch(&mut _unused as *mut TaskContext, next_task_cx_ptr);
         }
         unreachable!("run_first_task never reach this");
+    }
+
+    fn get_current_token(&self) -> usize {
+        let inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].get_user_token()
+    }
+
+    fn get_current_trap_cx(&self) -> &mut TrapContext {
+        let inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].get_trap_cx()
     }
 }
 
@@ -139,10 +143,14 @@ pub fn get_current_task() -> usize {
     TASK_MANAGER.get_current_task()
 }
 
-pub fn get_current_task_memory_range() -> [usize; 2] {
-    TASK_MANAGER.get_current_task_memory_range()
-}
-
 pub fn run_first_task() -> ! {
     TASK_MANAGER.run_first_task();
+}
+
+pub fn current_user_token() -> usize {
+    TASK_MANAGER.get_current_token()
+}
+
+pub fn current_trap_cx() -> &'static mut TrapContext {
+    TASK_MANAGER.get_current_trap_cx()
 }

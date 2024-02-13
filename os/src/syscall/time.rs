@@ -12,8 +12,8 @@ pub fn syscall_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
         if let Some(t) = ts.as_mut() {
             t.usec = usec;
             t.sec = usec / MICRO_PER_SEC;
-        }else{
-            return -1
+        } else {
+            return -1;
         }
     }
     0
