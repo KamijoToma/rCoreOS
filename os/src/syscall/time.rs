@@ -1,7 +1,7 @@
 use core::{mem::size_of, slice::from_raw_parts};
 
 use crate::{
-    mm::page_table::translated_byte_buffer,
+    mm::page_table::{translated_byte_buffer, translated_byte_buffer_mut},
     task::current_user_token,
     timer::{self, MICRO_PER_SEC},
 };
@@ -14,24 +14,28 @@ pub struct TimeVal {
 
 pub fn syscall_get_time(ts: usize, _tz: usize) -> isize {
     let usec = timer::get_time_us();
-    let buffer =
-        translated_byte_buffer(current_user_token(), ts as *const u8, size_of::<TimeVal>());
-    let time_val = TimeVal {
-        sec: usec / MICRO_PER_SEC,
-        usec,
-    };
-    unsafe {
-        let src = from_raw_parts(
-            &time_val as *const TimeVal as *const u8,
-            size_of::<TimeVal>(),
-        );
-        let mut start = 0usize;
-        let mut end = 0usize;
-        for dst in buffer {
-            end += dst.len();
-            dst.copy_from_slice(&src[start..end]);
-            start = end;
+    if let Some(buffer) =
+        translated_byte_buffer_mut(current_user_token(), ts as *const u8, size_of::<TimeVal>())
+    {
+        let time_val = TimeVal {
+            sec: usec / MICRO_PER_SEC,
+            usec,
+        };
+        unsafe {
+            let src = from_raw_parts(
+                &time_val as *const TimeVal as *const u8,
+                size_of::<TimeVal>(),
+            );
+            let mut start = 0usize;
+            let mut end = 0usize;
+            for dst in buffer {
+                end += dst.len();
+                dst.copy_from_slice(&src[start..end]);
+                start = end;
+            }
         }
+        0
+    } else {
+        -1
     }
-    0
 }
