@@ -77,14 +77,14 @@ impl PhysPageNum {
     }
 
     pub fn get_pte_array(&self) -> &'static mut [PageTableEntry] {
-        let pa: PhysAddr = self.clone().into();
+        let pa: PhysAddr = (*self).into();
         unsafe {
             core::slice::from_raw_parts_mut(pa.0 as *mut PageTableEntry, 512) // Why 512?
         }
     }
 
     pub fn get_mut<T>(&self) -> &'static mut T {
-        let pa: PhysAddr = self.clone().into();
+        let pa: PhysAddr = (*self).into();
         unsafe { (pa.0 as *mut T).as_mut().unwrap() }
     }
 }

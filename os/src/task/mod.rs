@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
-use log::{debug, info, trace};
+use log::{info, trace};
 
 use crate::loader::get_app_data;
 use crate::shutdown;

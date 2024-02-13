@@ -1,5 +1,3 @@
-use log::error;
-
 use crate::{mm::page_table::translated_byte_buffer, task::current_user_token};
 
 const FD_STDOUT: usize = 1;

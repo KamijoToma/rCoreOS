@@ -1,6 +1,6 @@
 use core::arch::{asm, global_asm};
 
-use log::{debug, error, trace};
+use log::{error, trace};
 use riscv::register::{
     scause::{self, Exception, Trap},
     sie, stval, stvec,
@@ -45,7 +45,7 @@ fn set_kernel_trap_entry() {
 
 fn set_user_trap_entry() {
     unsafe {
-        stvec::write(TRAMPOLINE as usize, stvec::TrapMode::Direct);
+        stvec::write(TRAMPOLINE, stvec::TrapMode::Direct);
     }
 }
 
@@ -77,7 +77,7 @@ pub fn trap_return() -> ! {
 }
 
 #[no_mangle]
-pub fn trap_handler(cx: &mut TrapContext) -> ! {
+pub fn trap_handler(_cx: &mut TrapContext) -> ! {
     set_kernel_trap_entry();
     let cx = current_trap_cx();
     let scause = scause::read();

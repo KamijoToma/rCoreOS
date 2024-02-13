@@ -18,7 +18,7 @@ mod syscall;
 mod task;
 mod timer;
 mod trap;
-use ::log::{debug, info};
+use ::log::info;
 use sbi::*;
 
 use crate::task::run_first_task;

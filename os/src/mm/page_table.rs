@@ -1,7 +1,6 @@
 use alloc::vec;
 use alloc::vec::Vec;
 use bitflags::*;
-use riscv::register::stval;
 
 use super::{
     address::{PhysPageNum, StepByOne, VirtAddr, VirtPageNum},
@@ -9,6 +8,7 @@ use super::{
 };
 
 bitflags! {
+    #[derive(Default)]
     pub struct PTEFlags: u8 {
         const V = 1 << 0; // 合法标志
         const R = 1 << 1; // 可读标志
@@ -18,12 +18,6 @@ bitflags! {
         const G = 1 << 5; // Unknown
         const A = 1 << 6; // 访问标志
         const D = 1 << 7; // 修改标志
-    }
-}
-
-impl Default for PTEFlags {
-    fn default() -> Self {
-        PTEFlags { bits: 0u8 } // Make compiler happy
     }
 }
 
@@ -69,21 +63,17 @@ pub struct PageTable {
 
 impl PageTable {
     pub fn new() -> Option<Self> {
-        if let Some(frame) = frame_alloc() {
-            Some(PageTable {
-                root_ppn: frame.ppn,
-                frames: vec![frame],
-            })
-        } else {
-            None
-        }
+        frame_alloc().map(|frame| PageTable {
+            root_ppn: frame.ppn,
+            frames: vec![frame],
+        })
     }
     fn find_pte_create(&mut self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
         let idxs = vpn.indexes();
         let mut ppn = self.root_ppn;
         let mut result: Option<&mut PageTableEntry> = None;
-        for i in 0..3 {
-            let pte = &mut ppn.get_pte_array()[idxs[i]];
+        for (i, item) in idxs.iter().enumerate() {
+            let pte = &mut ppn.get_pte_array()[*item];
             if i == 2 {
                 result = Some(pte);
                 break;
@@ -101,8 +91,8 @@ impl PageTable {
         let idxs = vpn.indexes();
         let mut ppn = self.root_ppn;
         let mut result: Option<&mut PageTableEntry> = None;
-        for i in 0..3 {
-            let pte = &mut ppn.get_pte_array()[idxs[i]];
+        for (i, item) in idxs.iter().enumerate() {
+            let pte = &mut ppn.get_pte_array()[*item];
             if i == 2 {
                 result = Some(pte);
                 break;
@@ -135,7 +125,7 @@ impl PageTable {
     }
 
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
-        self.find_pte(vpn).map(|pte| pte.clone())
+        self.find_pte(vpn).map(|pte| *pte)
     }
 
     pub fn token(&self) -> usize {
@@ -144,11 +134,7 @@ impl PageTable {
     }
 }
 
-pub fn translated_byte_buffer(
-    token: usize,
-    ptr: *const u8,
-    len: usize
-) -> Vec<&'static mut [u8]> {
+pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&'static mut [u8]> {
     let page_table = PageTable::from_token(token);
     let mut start = ptr as usize;
     let end = start + len;
@@ -156,16 +142,13 @@ pub fn translated_byte_buffer(
     while start < end {
         let start_va = VirtAddr::from(start);
         let mut vpn = start_va.floor();
-        let ppn = page_table
-            .translate(vpn)
-            .unwrap()
-            .ppn();
+        let ppn = page_table.translate(vpn).unwrap().ppn();
         vpn.step();
         let mut end_va = VirtAddr::from(vpn);
         end_va = end_va.min(VirtAddr::from(end));
         if end_va.page_offset() == 0 {
             v.push(&mut ppn.get_bytes_array()[start_va.page_offset()..])
-        }else {
+        } else {
             v.push(&mut ppn.get_bytes_array()[start_va.page_offset()..end_va.page_offset()]);
         }
         start = end_va.into();

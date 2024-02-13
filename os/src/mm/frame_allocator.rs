@@ -1,4 +1,4 @@
-use core::fmt::{Debug, Pointer};
+use core::fmt::Debug;
 
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
@@ -31,19 +31,17 @@ impl FrameAllocator for StackFrameAllocator {
     fn alloc(&mut self) -> Option<PhysPageNum> {
         if let Some(ppn) = self.recycled.pop() {
             Some(ppn.into())
+        } else if self.current == self.end {
+            None
         } else {
-            if self.current == self.end {
-                None
-            } else {
-                self.current += 1;
-                Some((self.current - 1).into())
-            }
+            self.current += 1;
+            Some((self.current - 1).into())
         }
     }
 
     fn dealloc(&mut self, ppn: PhysPageNum) {
         let ppn = ppn.0;
-        if ppn >= self.current || self.recycled.iter().find(|&v| *v == ppn).is_some() {
+        if ppn >= self.current || self.recycled.iter().any(|v| *v == ppn) {
             panic!("Frame ppn={:#x} has not been allocated!", ppn);
         }
         self.recycled.push(ppn);
@@ -107,7 +105,7 @@ pub fn frame_alloc() -> Option<FrameTracker> {
     FRAME_ALLOCATOR
         .exclusive_access()
         .alloc()
-        .map(|ppn| FrameTracker::new(ppn))
+        .map(FrameTracker::new)
 }
 
 fn frame_dealloc(ppn: PhysPageNum) {
