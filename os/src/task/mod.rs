@@ -1,19 +1,19 @@
-use core::future::Ready;
+
 
 use alloc::sync::Arc;
-use alloc::vec::Vec;
-use lazy_static::lazy_static;
-use log::{info, trace};
 
-use crate::loader::{get_app_data, get_app_data_by_name};
+use lazy_static::lazy_static;
+use log::{info};
+
+use crate::loader::{get_app_data_by_name};
 use crate::shutdown;
 use crate::task::context::TaskContext;
-use crate::trap::context::TrapContext;
-use crate::{loader::get_num_app, sync::up::UPSafeCell};
+
+
 
 use self::manager::add_task;
 use self::processor::{schedule, take_current_task};
-use self::switch::__switch;
+
 use self::tasks::TaskControlBlock;
 use self::tasks::TaskStatus;
 
@@ -24,8 +24,8 @@ pub mod processor;
 pub mod switch;
 pub mod tasks;
 
-use processor::current_trap_cx;
-use processor::current_user_token;
+
+
 
 pub fn suspend_current_and_run_next() {
     let task = take_current_task().unwrap();

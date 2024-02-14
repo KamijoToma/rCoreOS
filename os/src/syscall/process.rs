@@ -1,5 +1,5 @@
 use alloc::sync::Arc;
-use log::{debug, info};
+
 
 use crate::{
     loader::get_app_data_by_name,
@@ -51,11 +51,9 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
     let task = current_task().unwrap();
 
     let mut inner = task.inner_exclusive_access();
-    if inner
+    if !inner
         .children
-        .iter()
-        .find(|p| pid == -1 || pid as usize == p.getpid())
-        .is_none()
+        .iter().any(|p| pid == -1 || pid as usize == p.getpid())
     {
         return -1; // no zombie process found
     }

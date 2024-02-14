@@ -1,6 +1,3 @@
-use log::debug;
-use sbi_rt::legacy::console_getchar;
-
 use crate::{
     mm::page_table::{translated_byte_buffer, translated_byte_buffer_mut},
     task::{processor::current_user_token, suspend_current_and_run_next},
@@ -25,6 +22,7 @@ pub fn sys_write(fd: usize, buf: *const u8, len: usize) -> isize {
     }
 }
 
+#[allow(deprecated)]
 pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
     match fd {
         FD_STDIN => {
@@ -33,7 +31,7 @@ pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
             }
             let mut c: usize;
             loop {
-                c = console_getchar();
+                c = sbi_rt::legacy::console_getchar();
                 if c == 0 {
                     suspend_current_and_run_next();
                     continue;

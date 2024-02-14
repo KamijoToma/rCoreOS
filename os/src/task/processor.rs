@@ -1,6 +1,6 @@
-use alloc::{sync::Arc, task};
+use alloc::{sync::Arc};
 use lazy_static::lazy_static;
-use log::debug;
+
 
 use crate::{sync::up::UPSafeCell, trap::context::TrapContext};
 
@@ -22,7 +22,7 @@ impl Processor {
     }
 
     pub fn current(&self) -> OATaskControlBlock {
-        self.current.as_ref().map(|task| Arc::clone(task))
+        self.current.clone()
     }
 
     pub fn get_idle_task_cx_ptr(&mut self) -> *mut TaskContext {

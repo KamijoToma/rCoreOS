@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
-use log::debug;
+
 
 use crate::{config::{KERNEL_STACK_SIZE, PAGE_SIZE, TRAMPOLINE}, mm::{address::VirtAddr, memory_set::MapPermission, KERNEL_SPACE}, sync::up::UPSafeCell};
 
@@ -37,7 +37,7 @@ impl PidAllocate for StackPidAllocator {
     fn dealloc(&mut self, pid: usize) {
         assert!(pid < self.current);
         assert!(
-            self.recycled.iter().find(|ppid| **ppid == pid).is_none()
+            !self.recycled.iter().any(|ppid| *ppid == pid)
         );
         self.recycled.push(pid);
     }

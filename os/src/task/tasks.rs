@@ -1,12 +1,12 @@
-use core::{cell::RefMut, mem};
+use core::{cell::RefMut};
 
 use alloc::{sync::Weak, sync::Arc, vec::Vec};
-use log::debug;
+
 
 use crate::{
-    config::{kernel_stack_position, TRAP_CONTEXT}, mm::{
+    config::{TRAP_CONTEXT}, mm::{
         address::{PhysPageNum, VirtAddr},
-        memory_set::{MapPermission, MemorySet},
+        memory_set::{MemorySet},
         KERNEL_SPACE,
     }, sync::up::UPSafeCell, trap::{context::TrapContext, trap_handler}
 };
@@ -17,7 +17,6 @@ use super::{context::TaskContext, pid::{pid_alloc, KernelStack, PidHandle}};
 pub enum TaskStatus {
     Ready,
     Running,
-    Exited,
     Zombie,
 }
 
