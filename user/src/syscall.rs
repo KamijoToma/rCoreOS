@@ -63,5 +63,8 @@ pub fn sys_exec(path: &str) -> isize {
 }
 
 pub fn sys_read(fd: usize, buffer: &mut [u8]) -> isize {
-    syscall(SYSCALL_READ, [fd, buffer.as_mut_ptr() as usize, buffer.len()])
+    syscall(
+        SYSCALL_READ,
+        [fd, buffer.as_mut_ptr() as usize, buffer.len()],
+    )
 }

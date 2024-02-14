@@ -1,7 +1,5 @@
-
-
 use crate::{
-    mm::page_table::{translate_memcopy},
+    mm::page_table::translate_memcopy,
     task::processor::current_user_token,
     timer::{self, MICRO_PER_SEC},
 };
@@ -18,10 +16,9 @@ pub fn syscall_get_time(ts: usize, _tz: usize) -> isize {
         sec: usec / MICRO_PER_SEC,
         usec,
     };
-    if translate_memcopy(current_user_token(), ts as *const u8, &time_val)
-        .is_err() {
+    if translate_memcopy(current_user_token(), ts as *const u8, &time_val).is_err() {
         -1
-    }else {
+    } else {
         0
     }
 }

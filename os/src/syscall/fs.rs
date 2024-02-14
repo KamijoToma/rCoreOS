@@ -45,12 +45,10 @@ pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
                     buffer_vec[0].as_mut_ptr().write_volatile(ch);
                 }
                 0
-            }else {
+            } else {
                 -1
             }
         }
-        _ => {
-            -1
-        }
+        _ => -1,
     }
 }

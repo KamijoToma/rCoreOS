@@ -8,7 +8,11 @@ fn main() -> i32 {
     let mut timer = TimeVal::default();
     get_time(&mut timer);
     let wait_for = timer.usec + 1_000_000;
-    while {get_time(&mut timer); timer.usec} < wait_for {
+    while {
+        get_time(&mut timer);
+        timer.usec
+    } < wait_for
+    {
         yield_();
     }
     println!("OK!");

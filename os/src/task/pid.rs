@@ -1,15 +1,18 @@
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 
-
-use crate::{config::{KERNEL_STACK_SIZE, PAGE_SIZE, TRAMPOLINE}, mm::{address::VirtAddr, memory_set::MapPermission, KERNEL_SPACE}, sync::up::UPSafeCell};
+use crate::{
+    config::{KERNEL_STACK_SIZE, PAGE_SIZE, TRAMPOLINE},
+    mm::{address::VirtAddr, memory_set::MapPermission, KERNEL_SPACE},
+    sync::up::UPSafeCell,
+};
 
 pub struct PidHandle(pub usize);
 
 trait PidAllocate {
     fn new() -> Self;
     fn alloc(&mut self) -> PidHandle;
-    fn dealloc(&mut self, pid: usize); 
+    fn dealloc(&mut self, pid: usize);
 }
 
 struct StackPidAllocator {
@@ -21,14 +24,14 @@ impl PidAllocate for StackPidAllocator {
     fn new() -> Self {
         PidAllocator {
             current: 0,
-            recycled: Vec::new()
+            recycled: Vec::new(),
         }
     }
 
     fn alloc(&mut self) -> PidHandle {
         if let Some(pid) = self.recycled.pop() {
             PidHandle(pid)
-        }else {
+        } else {
             self.current += 1;
             PidHandle(self.current - 1)
         }
@@ -36,19 +39,16 @@ impl PidAllocate for StackPidAllocator {
 
     fn dealloc(&mut self, pid: usize) {
         assert!(pid < self.current);
-        assert!(
-            !self.recycled.iter().any(|ppid| *ppid == pid)
-        );
+        assert!(!self.recycled.iter().any(|ppid| *ppid == pid));
         self.recycled.push(pid);
     }
 }
 
 type PidAllocator = StackPidAllocator;
 
-lazy_static!{
-    static ref PID_ALLOCATOR: UPSafeCell<PidAllocator> = unsafe {
-        UPSafeCell::new(PidAllocator::new())
-    };
+lazy_static! {
+    static ref PID_ALLOCATOR: UPSafeCell<PidAllocator> =
+        unsafe { UPSafeCell::new(PidAllocator::new()) };
 }
 
 pub fn pid_alloc() -> PidHandle {
@@ -62,7 +62,7 @@ impl Drop for PidHandle {
 }
 
 pub struct KernelStack {
-    pid: usize
+    pid: usize,
 }
 
 pub fn kernel_stack_position(app_id: usize) -> (usize, usize) {
@@ -75,16 +75,12 @@ impl KernelStack {
     pub fn new(pid_handle: &PidHandle) -> Self {
         let pid = pid_handle.0;
         let (kernel_stack_bottom, kernel_stack_top) = kernel_stack_position(pid);
-        KERNEL_SPACE
-            .exclusive_access()
-            .insert_framed_area(
-                kernel_stack_bottom.into(), 
-                kernel_stack_top.into(), 
-                MapPermission::R | MapPermission::W
-            );
-        KernelStack {
-            pid: pid_handle.0
-        }
+        KERNEL_SPACE.exclusive_access().insert_framed_area(
+            kernel_stack_bottom.into(),
+            kernel_stack_top.into(),
+            MapPermission::R | MapPermission::W,
+        );
+        KernelStack { pid: pid_handle.0 }
     }
 
     pub fn get_top(&self) -> usize {

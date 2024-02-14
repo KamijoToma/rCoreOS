@@ -1,17 +1,22 @@
-use core::{cell::RefMut};
+use core::cell::RefMut;
 
-use alloc::{sync::Weak, sync::Arc, vec::Vec};
-
+use alloc::{sync::Arc, sync::Weak, vec::Vec};
 
 use crate::{
-    config::{TRAP_CONTEXT}, mm::{
+    config::TRAP_CONTEXT,
+    mm::{
         address::{PhysPageNum, VirtAddr},
-        memory_set::{MemorySet},
+        memory_set::MemorySet,
         KERNEL_SPACE,
-    }, sync::up::UPSafeCell, trap::{context::TrapContext, trap_handler}
+    },
+    sync::up::UPSafeCell,
+    trap::{context::TrapContext, trap_handler},
 };
 
-use super::{context::TaskContext, pid::{pid_alloc, KernelStack, PidHandle}};
+use super::{
+    context::TaskContext,
+    pid::{pid_alloc, KernelStack, PidHandle},
+};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum TaskStatus {
@@ -23,7 +28,7 @@ pub enum TaskStatus {
 pub struct TaskControlBlock {
     pub pid: PidHandle,
     pub kernel_stack: KernelStack,
-    inner: UPSafeCell<TaskControlBlockInner>
+    inner: UPSafeCell<TaskControlBlockInner>,
 }
 
 pub struct TaskControlBlockInner {
@@ -61,18 +66,18 @@ impl TaskControlBlock {
                     memory_set,
                     parent: None,
                     children: Vec::new(),
-                    exit_code: 0
+                    exit_code: 0,
                 })
-            }
+            },
         };
         // prepare TrapContext
         let trap_cx = task_control_block.inner_exclusive_access().get_trap_cx();
         *trap_cx = TrapContext::app_init_context(
-            entry_point, 
-            user_sp, 
-            KERNEL_SPACE.exclusive_access().token(), 
-            kernel_stack_top, 
-            trap_handler as usize
+            entry_point,
+            user_sp,
+            KERNEL_SPACE.exclusive_access().token(),
+            kernel_stack_top,
+            trap_handler as usize,
         );
         task_control_block
     }
@@ -96,14 +101,14 @@ impl TaskControlBlock {
         inner.trap_cx_ppn = trap_cx_ppn;
         let trap_cx = inner.get_trap_cx();
         *trap_cx = TrapContext::app_init_context(
-            entry_point, 
-            user_sp, 
-            KERNEL_SPACE.exclusive_access().token(), 
-            self.kernel_stack.get_top(), 
-            trap_handler as usize
+            entry_point,
+            user_sp,
+            KERNEL_SPACE.exclusive_access().token(),
+            self.kernel_stack.get_top(),
+            trap_handler as usize,
         );
     }
-    
+
     pub fn fork(self: &Arc<TaskControlBlock>) -> Arc<TaskControlBlock> {
         let mut parent_inner = self.inner_exclusive_access();
         let memory_set = MemorySet::from_existed_user(&parent_inner.memory_set);
@@ -114,7 +119,7 @@ impl TaskControlBlock {
         let pid_handle = pid_alloc();
         let kernel_stack = KernelStack::new(&pid_handle);
         let kernel_stack_top = kernel_stack.get_top();
-        let task_control_block = Arc::new(TaskControlBlock{
+        let task_control_block = Arc::new(TaskControlBlock {
             pid: pid_handle,
             kernel_stack,
             inner: unsafe {
@@ -126,9 +131,9 @@ impl TaskControlBlock {
                     memory_set,
                     parent: Some(Arc::downgrade(self)),
                     children: Vec::new(),
-                    exit_code: 0
+                    exit_code: 0,
                 })
-            }
+            },
         });
         parent_inner.children.push(task_control_block.clone());
         let trap_cx = task_control_block.inner_exclusive_access().get_trap_cx();

@@ -1,5 +1,3 @@
-
-
 use self::{
     fs::{sys_read, sys_write},
     process::{sys_exec, sys_exit, sys_fork, sys_waitpid, sys_yield},
@@ -23,7 +21,6 @@ const SYSCALL_EXEC: usize = 221;
 const SYSCALL_READ: usize = 63;
 
 pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
-    
     match syscall_id {
         SYSCALL_WRITE => sys_write(args[0], args[1] as *const u8, args[2]),
         SYSCALL_EXIT => sys_exit(args[0] as i32),

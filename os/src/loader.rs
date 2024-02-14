@@ -4,8 +4,6 @@ use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use log::info;
 
-
-
 pub fn get_num_app() -> usize {
     extern "C" {
         fn _num_app();
@@ -65,7 +63,7 @@ pub fn list_apps() {
     info!("- Available apps are: ");
     APP_NAMES.iter().enumerate().for_each(|(i, app_name)| {
         print!(" {},", app_name);
-        if (i+1)%4 == 0 {
+        if (i + 1) % 4 == 0 {
             println!("");
         }
     });

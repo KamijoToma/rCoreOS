@@ -1,10 +1,8 @@
 use _core::mem::size_of;
 use _core::slice::from_raw_parts;
-use alloc::{string::String, vec};
 use alloc::vec::Vec;
+use alloc::{string::String, vec};
 use bitflags::*;
-
-
 
 use super::{
     address::{PhysPageNum, StepByOne, VirtAddr, VirtPageNum},
@@ -141,16 +139,20 @@ impl PageTable {
         let vpn = va.floor();
         if let Some(ppe) = self.translate(vpn) {
             if !ppe.readable() {
-                return None
+                return None;
             }
             let ppn = ppe.ppn();
-            return Some(&mut ppn.get_bytes_array()[va.page_offset()])
+            return Some(&mut ppn.get_bytes_array()[va.page_offset()]);
         }
         None
     }
 }
 
-pub fn translated_byte_buffer_mut(token: usize, ptr: *const u8, len: usize) -> Option<Vec<&'static mut [u8]>> {
+pub fn translated_byte_buffer_mut(
+    token: usize,
+    ptr: *const u8,
+    len: usize,
+) -> Option<Vec<&'static mut [u8]>> {
     let page_table = PageTable::from_token(token);
     let mut start = ptr as usize;
     let end = start + len;
@@ -160,7 +162,7 @@ pub fn translated_byte_buffer_mut(token: usize, ptr: *const u8, len: usize) -> O
         let mut vpn = start_va.floor();
         let ppe = page_table.translate(vpn).unwrap();
         if !ppe.readable() || !ppe.writable() {
-            return None
+            return None;
         }
         let ppn = ppe.ppn();
         vpn.step();
@@ -176,7 +178,11 @@ pub fn translated_byte_buffer_mut(token: usize, ptr: *const u8, len: usize) -> O
     Some(v)
 }
 
-pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Option<Vec<&'static [u8]>> {
+pub fn translated_byte_buffer(
+    token: usize,
+    ptr: *const u8,
+    len: usize,
+) -> Option<Vec<&'static [u8]>> {
     let page_table = PageTable::from_token(token);
     let mut start = ptr as usize;
     let end = start + len;
@@ -186,7 +192,7 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Optio
         let mut vpn = start_va.floor();
         let ppe = page_table.translate(vpn).unwrap();
         if !ppe.readable() {
-            return None
+            return None;
         }
         let ppn = ppe.ppn();
         vpn.step();
@@ -214,20 +220,20 @@ pub fn translate_str(token: usize, ptr: *const u8) -> Option<String> {
                 string.push(*ch as char);
                 start += 1;
             }
-        }else{
+        } else {
             return None;
         }
     }
     Some(string)
 }
 
-pub fn translate_memcopy<T>(token: usize, ptr: *const u8, source: &T) -> Result<(), ()> where T: Sized{
-    if let Some(dst_list) = translated_byte_buffer_mut(token, ptr, size_of::<T>()){
+pub fn translate_memcopy<T>(token: usize, ptr: *const u8, source: &T) -> Result<(), ()>
+where
+    T: Sized,
+{
+    if let Some(dst_list) = translated_byte_buffer_mut(token, ptr, size_of::<T>()) {
         unsafe {
-            let src = from_raw_parts(
-                source as *const T as *const u8,
-                size_of::<T>(),
-            );
+            let src = from_raw_parts(source as *const T as *const u8, size_of::<T>());
             let mut start = 0usize;
             let mut end = 0usize;
             for dst in dst_list {
@@ -240,5 +246,4 @@ pub fn translate_memcopy<T>(token: usize, ptr: *const u8, source: &T) -> Result<
     } else {
         Err(())
     }
-
 }

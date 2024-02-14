@@ -1,7 +1,10 @@
 #![no_std]
 #![no_main]
 
-use alloc::{format, string::{String, ToString}};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use ansi_rgb::{blue, blue_magenta, green, red, white, yellow, Background, Foreground};
 use ulib::{console::getchar, exec, fork, waitpid};
 
@@ -19,7 +22,7 @@ const BS: u8 = 0x08;
 fn prompt(last_exit_code: i32) {
     let last_code_prompt = if last_exit_code == 0 {
         "0".to_string().fg(green())
-    }else {
+    } else {
         format!("{}", last_exit_code).fg(red())
     };
     print!("{} {}", last_code_prompt, "wShell $ ".fg(blue_magenta()));
@@ -33,9 +36,12 @@ fn backspace() {
 #[no_mangle]
 pub fn main() -> i32 {
     let mut last_exit_code = 0i32;
-    println!("{} {} {}", "wCore OS shell(wShell)".bg(blue()).fg(white()),
+    println!(
+        "{} {} {}",
+        "wCore OS shell(wShell)".bg(blue()).fg(white()),
         "version".bg(white()),
-        "0.1.0".bg(yellow()));
+        "0.1.0".bg(yellow())
+    );
     let mut line = String::new();
     prompt(last_exit_code);
     loop {

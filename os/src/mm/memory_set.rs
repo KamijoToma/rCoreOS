@@ -233,10 +233,11 @@ impl MemorySet {
             .areas
             .iter_mut()
             .enumerate()
-            .find(|(_, area)| area.vpn_range.get_start() == vpn) {
-                area.unmap(&mut self.page_table);
-                self.areas.remove(idx);
-            }
+            .find(|(_, area)| area.vpn_range.get_start() == vpn)
+        {
+            area.unmap(&mut self.page_table);
+            self.areas.remove(idx);
+        }
     }
 
     pub fn from_existed_user(user_space: &MemorySet) -> MemorySet {
@@ -248,7 +249,9 @@ impl MemorySet {
             for vpn in area.vpn_range {
                 let src_ppn = user_space.translate(vpn).unwrap().ppn();
                 let dst_ppn = memory_set.translate(vpn).unwrap().ppn();
-                dst_ppn.get_bytes_array().copy_from_slice(src_ppn.get_bytes_array());
+                dst_ppn
+                    .get_bytes_array()
+                    .copy_from_slice(src_ppn.get_bytes_array());
             }
         }
         memory_set
@@ -327,10 +330,7 @@ impl MapArea {
     }
     pub fn from_another(another: &MapArea) -> Self {
         Self {
-            vpn_range: VPNRange::new(
-                another.vpn_range.get_start(), 
-                another.vpn_range.get_end()
-            ),
+            vpn_range: VPNRange::new(another.vpn_range.get_start(), another.vpn_range.get_end()),
             data_frames: BTreeMap::new(),
             map_type: another.map_type,
             map_perm: another.map_perm,

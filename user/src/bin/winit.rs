@@ -14,7 +14,7 @@ fn main() -> i32 {
             // not exist
             println!("shell not exist");
             -1
-        }else{
+        } else {
             unreachable!("shell process unreachable");
         }
     } else {

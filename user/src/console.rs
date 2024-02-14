@@ -1,4 +1,4 @@
-use core::{fmt::{self, Write}};
+use core::fmt::{self, Write};
 
 use crate::{read, write};
 

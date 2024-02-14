@@ -1,15 +1,11 @@
-
-
 use alloc::sync::Arc;
 
 use lazy_static::lazy_static;
-use log::{info};
+use log::info;
 
-use crate::loader::{get_app_data_by_name};
+use crate::loader::get_app_data_by_name;
 use crate::shutdown;
 use crate::task::context::TaskContext;
-
-
 
 use self::manager::add_task;
 use self::processor::{schedule, take_current_task};
@@ -23,9 +19,6 @@ pub mod pid;
 pub mod processor;
 pub mod switch;
 pub mod tasks;
-
-
-
 
 pub fn suspend_current_and_run_next() {
     let task = take_current_task().unwrap();

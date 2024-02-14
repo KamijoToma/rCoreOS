@@ -1,10 +1,14 @@
-use alloc::{sync::Arc};
+use alloc::sync::Arc;
 use lazy_static::lazy_static;
-
 
 use crate::{sync::up::UPSafeCell, trap::context::TrapContext};
 
-use super::{context::TaskContext, manager::fetch_task, switch::__switch, tasks::{TaskControlBlock, TaskStatus}};
+use super::{
+    context::TaskContext,
+    manager::fetch_task,
+    switch::__switch,
+    tasks::{TaskControlBlock, TaskStatus},
+};
 
 type OATaskControlBlock = Option<Arc<TaskControlBlock>>;
 pub struct Processor {
@@ -14,7 +18,10 @@ pub struct Processor {
 
 impl Processor {
     pub fn new() -> Self {
-        Self { current: None, idle_task_cx: TaskContext::zero_init() }
+        Self {
+            current: None,
+            idle_task_cx: TaskContext::zero_init(),
+        }
     }
 
     pub fn take_current(&mut self) -> OATaskControlBlock {
@@ -31,9 +38,7 @@ impl Processor {
 }
 
 lazy_static! {
-    pub static ref PROCESSOR: UPSafeCell<Processor> = unsafe {
-        UPSafeCell::new(Processor::new())
-    };
+    pub static ref PROCESSOR: UPSafeCell<Processor> = unsafe { UPSafeCell::new(Processor::new()) };
 }
 
 pub fn take_current_task() -> OATaskControlBlock {
@@ -51,7 +56,10 @@ pub fn current_user_token() -> usize {
 }
 
 pub fn current_trap_cx() -> &'static mut TrapContext {
-    current_task().unwrap().inner_exclusive_access().get_trap_cx()
+    current_task()
+        .unwrap()
+        .inner_exclusive_access()
+        .get_trap_cx()
 }
 
 pub fn run_tasks() {
@@ -66,9 +74,7 @@ pub fn run_tasks() {
             processor.current = Some(task);
             drop(processor);
             unsafe {
-                __switch(
-                    idle_task_cx_ptr, 
-                next_task_cx_ptr);
+                __switch(idle_task_cx_ptr, next_task_cx_ptr);
             }
         }
     }
@@ -79,8 +85,6 @@ pub fn schedule(switched_task_cx_ptr: *mut TaskContext) {
     let idle_task_cx_ptr = processor.get_idle_task_cx_ptr();
     drop(processor);
     unsafe {
-        __switch(
-            switched_task_cx_ptr, 
-            idle_task_cx_ptr);
+        __switch(switched_task_cx_ptr, idle_task_cx_ptr);
     }
 }

@@ -43,8 +43,10 @@ pub fn exec(path: &str) -> isize {
 pub fn wait(exit_code: &mut i32) -> isize {
     loop {
         match sys_waitpid(-1, exit_code as *mut _) {
-            -2 => { yield_(); }
-            exit_pid => return exit_pid
+            -2 => {
+                yield_();
+            }
+            exit_pid => return exit_pid,
         }
     }
 }
@@ -52,13 +54,17 @@ pub fn wait(exit_code: &mut i32) -> isize {
 pub fn waitpid(pid: isize, exit_code: &mut i32) -> isize {
     loop {
         match sys_waitpid(pid, exit_code as *mut _) {
-            -2 => { yield_(); }
+            -2 => {
+                yield_();
+            }
             exit_pid => return exit_pid,
         }
     }
 }
 
-pub fn read(fd: usize, buf: &mut [u8]) -> isize { sys_read(fd, buf) }
+pub fn read(fd: usize, buf: &mut [u8]) -> isize {
+    sys_read(fd, buf)
+}
 
 #[repr(C)]
 pub struct TimeVal {
@@ -83,7 +89,8 @@ impl Default for TimeVal {
 pub extern "C" fn _start() -> ! {
     // init heap
     unsafe {
-        HEAP.lock().init(HEAP_SPACE.as_ptr() as usize, USER_HEAP_SIZE);
+        HEAP.lock()
+            .init(HEAP_SPACE.as_ptr() as usize, USER_HEAP_SIZE);
     }
     exit(main());
     unreachable!("unreachable after sys_exit!");
