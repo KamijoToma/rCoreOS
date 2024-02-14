@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use alloc::{format, string::String};
+use alloc::{format, string::{String, ToString}};
 use ansi_rgb::{blue, blue_magenta, green, red, white, yellow, Background, Foreground};
 use ulib::{console::getchar, exec, fork, waitpid};
 
@@ -18,7 +18,7 @@ const BS: u8 = 0x08;
 #[inline]
 fn prompt(last_exit_code: i32) {
     let last_code_prompt = if last_exit_code == 0 {
-        format!("{}", "0").fg(green())
+        "0".to_string().fg(green())
     }else {
         format!("{}", last_exit_code).fg(red())
     };
