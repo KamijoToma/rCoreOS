@@ -10,8 +10,7 @@ use crate::{
     config::{TRAMPOLINE, TRAP_CONTEXT},
     syscall::syscall,
     task::{
-        current_trap_cx, current_user_token, exit_current_and_run_next,
-        suspend_current_and_run_next,
+        exit_current_and_run_next, processor::{current_trap_cx, current_user_token}, suspend_current_and_run_next
     },
     timer::set_next_trigger,
 };
@@ -84,22 +83,25 @@ pub fn trap_handler(_cx: &mut TrapContext) -> ! {
     let stval = stval::read();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
+            let mut cx = current_trap_cx(); // due to fork
             cx.sepc += 4;
-            cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize
+            let result = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
+            cx = current_trap_cx();
+            cx.x[10] = result as usize;
         }
         Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
             error!(
                 "[kernel] PageFault in application, kernel killed it, pc = {:#x}",
                 cx.sepc
             );
-            exit_current_and_run_next()
+            exit_current_and_run_next(-2)
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!(
                 "[kernel] IllegalInstruction in application, kernel killed it, pc = {:#x}",
                 cx.sepc
             );
-            exit_current_and_run_next()
+            exit_current_and_run_next(-3)
         }
         Trap::Interrupt(scause::Interrupt::SupervisorTimer) => {
             set_next_trigger();

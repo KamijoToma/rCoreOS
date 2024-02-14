@@ -21,7 +21,6 @@ mod trap;
 use ::log::info;
 use sbi::*;
 
-use crate::task::run_first_task;
 extern crate alloc;
 #[macro_use]
 extern crate bitflags;
@@ -45,6 +44,7 @@ pub fn rust_main() -> ! {
     log::init().expect("Error init log module.");
     mm::init();
     mm::memory_set::remap_test();
+    task::add_initproc();
     info!("Hello World from wCore OS");
     info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
     info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
@@ -53,7 +53,9 @@ pub fn rust_main() -> ! {
     trap::init();
     trap::enable_timer_interrupt();
     timer::set_next_trigger();
-    run_first_task();
+    loader::list_apps();
+    task::processor::run_tasks();
+    unreachable!("main never reach this");
 }
 
 // 将 bss 段的内容全部置零
