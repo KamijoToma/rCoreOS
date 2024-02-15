@@ -61,7 +61,7 @@ pub fn main() -> i32 {
                         unreachable!("shell exec unreachable");
                     } else {
                         let mut exit_code = 0i32;
-                        let exit_pid = waitpid(pid, &mut exit_code);
+                        let exit_pid = waitpid(pid as usize, &mut exit_code);
                         assert_eq!(exit_pid, pid);
                         last_exit_code = exit_code;
                     }

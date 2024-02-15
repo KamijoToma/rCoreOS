@@ -29,6 +29,7 @@ const SYSCALL_FORK: usize = 220;
 const SYSSCALL_WAITPID: usize = 260;
 const SYSCALL_EXEC: usize = 221;
 const SYSCALL_READ: usize = 63;
+const SYSCALL_REBOOT: usize = 520;
 
 pub fn sys_write(fd: usize, buffer: &[u8]) -> isize {
     syscall(SYSCALL_WRITE, [fd, buffer.as_ptr() as usize, buffer.len()])
@@ -38,8 +39,8 @@ pub fn sys_exit(state: i32) -> isize {
     syscall(SYSCALL_EXIT, [state as usize, 0, 0])
 }
 
-pub fn sys_get_task_info() -> isize {
-    syscall(SYSCALL_TASKINFO, [0; 3])
+pub fn sys_get_task_info() -> usize {
+    syscall(SYSCALL_TASKINFO, [0; 3]) as usize
 }
 
 pub fn sys_yield() -> isize {
@@ -67,4 +68,10 @@ pub fn sys_read(fd: usize, buffer: &mut [u8]) -> isize {
         SYSCALL_READ,
         [fd, buffer.as_mut_ptr() as usize, buffer.len()],
     )
+}
+
+
+pub fn sys_reboot(cmd: isize) -> isize {
+    syscall(
+        SYSCALL_REBOOT, [cmd as usize, 0, 0])
 }

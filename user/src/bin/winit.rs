@@ -10,6 +10,7 @@ extern crate ulib;
 fn main() -> i32 {
     if fork() == 0 {
         // subprocess
+        println!("winit");
         if exec("wsh\0") != 0 {
             // not exist
             println!("shell not exist");

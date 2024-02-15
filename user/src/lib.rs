@@ -20,7 +20,7 @@ pub fn exit(exit_code: i32) -> isize {
     sys_exit(exit_code)
 }
 
-pub fn get_taskinfo() -> isize {
+pub fn get_taskinfo() -> usize {
     sys_get_task_info()
 }
 
@@ -51,9 +51,9 @@ pub fn wait(exit_code: &mut i32) -> isize {
     }
 }
 
-pub fn waitpid(pid: isize, exit_code: &mut i32) -> isize {
+pub fn waitpid(pid: usize, exit_code: &mut i32) -> isize {
     loop {
-        match sys_waitpid(pid, exit_code as *mut _) {
+        match sys_waitpid(pid as isize, exit_code as *mut _) {
             -2 => {
                 yield_();
             }
@@ -64,6 +64,10 @@ pub fn waitpid(pid: isize, exit_code: &mut i32) -> isize {
 
 pub fn read(fd: usize, buf: &mut [u8]) -> isize {
     sys_read(fd, buf)
+}
+
+pub fn shutdown() -> isize {
+    sys_reboot(1)
 }
 
 #[repr(C)]
