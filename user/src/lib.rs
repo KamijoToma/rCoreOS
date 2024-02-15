@@ -20,7 +20,7 @@ pub fn exit(exit_code: i32) -> isize {
     sys_exit(exit_code)
 }
 
-pub fn get_taskinfo() -> usize {
+pub fn getpid() -> usize {
     sys_get_task_info()
 }
 
@@ -28,8 +28,17 @@ pub fn yield_() -> isize {
     sys_yield()
 }
 
-pub fn get_time(ts: &mut TimeVal) -> isize {
-    sys_get_time(&mut *ts, 0)
+pub fn get_time_us() -> usize {
+    let mut ts = TimeVal {
+        usec: 0,
+        sec: 0
+    };
+    sys_get_time(&mut ts, 0);
+    ts.usec
+}
+
+pub fn get_time() -> usize {
+    get_time_us() / 1000
 }
 
 pub fn fork() -> isize {
@@ -108,7 +117,7 @@ fn main() -> i32 {
 }
 
 // Alloc
-const USER_HEAP_SIZE: usize = 0x4000;
+const USER_HEAP_SIZE: usize = 0x2000;
 static mut HEAP_SPACE: [u8; USER_HEAP_SIZE] = [0; USER_HEAP_SIZE];
 
 #[global_allocator]

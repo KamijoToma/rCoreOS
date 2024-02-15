@@ -55,7 +55,7 @@ pub fn main() -> i32 {
                     if pid == 0 {
                         // child process
                         if exec(line.as_str()) == -1 {
-                            println!("Error when executing! ");
+                            println!("program not found");
                             return -4;
                         }
                         unreachable!("shell exec unreachable");

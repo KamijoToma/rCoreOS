@@ -1,17 +1,13 @@
 #![no_std]
 #![no_main]
 
-use ulib::{get_time, println, yield_, TimeVal};
+use ulib::{get_time, println, yield_};
 #[no_mangle]
 fn main() -> i32 {
     println!("Sleeping 1s...");
-    let mut timer = TimeVal::default();
-    get_time(&mut timer);
-    let wait_for = timer.usec + 1_000_000;
-    while {
-        get_time(&mut timer);
-        timer.usec
-    } < wait_for
+    let ms = get_time();
+    let wait_for = ms + 1_000;
+    while get_time() < wait_for
     {
         yield_();
     }

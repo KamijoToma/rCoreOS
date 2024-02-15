@@ -47,8 +47,8 @@ pub fn sys_yield() -> isize {
     syscall(SYSCALL_YIELD, [0; 3])
 }
 
-pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
-    syscall(SYSCALL_GET_TIME, [ts as usize, _tz, 0])
+pub fn sys_get_time(ts: &mut TimeVal, _tz: usize) -> isize {
+    syscall(SYSCALL_GET_TIME, [ts as *mut _ as usize, _tz, 0])
 }
 
 pub fn sys_fork() -> isize {
@@ -59,6 +59,13 @@ pub fn sys_waitpid(pid: isize, exit_code: *mut i32) -> isize {
     syscall(SYSSCALL_WAITPID, [pid as usize, exit_code as usize, 0])
 }
 
+/// sys_exec system call
+/// - path: the program you want to run
+/// 
+/// return value:
+/// - 0 normal, actually never returns
+/// - -1 app not found
+/// - -2 illegal argument, actually should not happen
 pub fn sys_exec(path: &str) -> isize {
     syscall(SYSCALL_EXEC, [path.as_ptr() as usize, 0, 0])
 }

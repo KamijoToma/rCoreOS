@@ -39,10 +39,10 @@ pub fn sys_exec(path: *const u8) -> isize {
             task.exec(data);
             0 // Actually never return 0
         } else {
-            -1
+            -1 // app not found
         }
     } else {
-        -1
+        -2 // argument error
     }
 }
 
